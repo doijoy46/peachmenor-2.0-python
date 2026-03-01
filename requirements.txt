@@ -8,3 +8,4 @@ ultralyticsplus>=0.0.28
 python-multipart==0.0.9
 google-genai
 mistralai>=1.0.0
+supabase

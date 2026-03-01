@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     google_model: str = "gemini-2.0-flash"
     mistral_api_key: str = ""
     mistral_model: str = "pixtral-12b-2409"
+    supabase_url: str = ""
+    supabase_key: str = ""
 
 
 

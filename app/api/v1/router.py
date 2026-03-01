@@ -4,18 +4,12 @@ import os
 import tempfile
 import uuid
 from io import BytesIO
-from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from PIL import Image
 
 router = APIRouter()
-
-RESULTS_DIR = Path("app/static/results")
-GENERATED_DIR = Path("app/static/generated")
-RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-GENERATED_DIR.mkdir(parents=True, exist_ok=True)
 
 _yolo_model = None
 _mistral_client = None
@@ -124,6 +118,12 @@ def _encode_image_b64(img: Image.Image) -> str:
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
+def _pil_to_bytes(img: Image.Image) -> bytes:
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 def _parse_json_response(raw: str) -> dict:
     raw = raw.strip()
     if raw.startswith("```"):
@@ -201,14 +201,41 @@ def _gemini_generate_image(crop_img: Image.Image, metadata: dict) -> bytes:
 
     for part in response.candidates[0].content.parts:
         if part.inline_data is not None:
-            return part.inline_data.data  # already bytes
+            return part.inline_data.data
 
     raise RuntimeError("Gemini returned no image in response")
+
+
+def _upload_to_storage(bucket: str, path: str, data: bytes) -> str:
+    """Upload bytes to Supabase Storage and return the public URL."""
+    from app.core.supabase import get_supabase
+    sb = get_supabase()
+    sb.storage.from_(bucket).upload(path, data, {"content-type": "image/png"})
+    return sb.storage.from_(bucket).get_public_url(path)
 
 
 @router.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@router.get("/catalog/collection")
+def get_collection():
+    """Return all jobs with their associated crops, newest first."""
+    from app.core.supabase import get_supabase
+    sb = get_supabase()
+    jobs = sb.table("jobs").select("*").order("created_at", desc=True).execute()
+    crops = sb.table("crops").select("*").order("created_at", desc=True).execute()
+
+    crops_by_job: dict[str, list] = {}
+    for c in crops.data:
+        crops_by_job.setdefault(c["job_id"], []).append(c)
+
+    result = []
+    for job in jobs.data:
+        result.append({**job, "crops": crops_by_job.get(job["id"], [])})
+
+    return {"collection": result}
 
 
 @router.post("/catalog/analyze")
@@ -218,14 +245,16 @@ async def analyze_catalog(files: List[UploadFile] = File(...)):
       1. YOLO detects and segments clothing items.
       2. Mistral extracts per-crop metadata and full-image scene analysis.
       3. Gemini generates a product photograph for each crop.
-      4. All results saved to disk; metadata persisted as metadata.json.
+      4. Images uploaded to Supabase Storage; metadata inserted into Supabase DB.
     """
     if not files:
         raise HTTPException(status_code=400, detail="No files provided.")
 
     from ultralyticsplus import render_result
+    from app.core.supabase import get_supabase
 
     yolo = _get_yolo_model()
+    sb = get_supabase()
     output = []
 
     for upload in files:
@@ -241,13 +270,12 @@ async def analyze_catalog(files: List[UploadFile] = File(...)):
             result = results[0]
 
             job_id = uuid.uuid4().hex
-            job_dir = RESULTS_DIR / job_id
-            gen_dir = GENERATED_DIR / job_id
-            job_dir.mkdir()
-            gen_dir.mkdir()
 
+            # Render YOLO detection overlay and upload to Storage
             render = render_result(model=yolo, image=tmp_path, result=result)
-            render.save(str(job_dir / "rendered.png"))
+            rendered_url = _upload_to_storage(
+                "results", f"{job_id}/rendered.png", _pil_to_bytes(render)
+            )
 
             orig = Image.open(tmp_path).convert("RGB")
 
@@ -257,6 +285,14 @@ async def analyze_catalog(files: List[UploadFile] = File(...)):
             except Exception as exc:
                 scene = {"error": str(exc)}
 
+            # Insert job row
+            sb.table("jobs").insert({
+                "id": job_id,
+                "filename": upload.filename,
+                "rendered_url": rendered_url,
+                "scene_analysis": scene,
+            }).execute()
+
             crops = []
             for i, box in enumerate(result.boxes):
                 label = result.names[int(box.cls)]
@@ -265,7 +301,11 @@ async def analyze_catalog(files: List[UploadFile] = File(...)):
 
                 crop_img = orig.crop((x1, y1, x2, y2))
                 filename = f"{i}_{label}.png"
-                crop_img.save(str(job_dir / filename))
+
+                # Upload crop to Storage
+                crop_url = _upload_to_storage(
+                    "results", f"{job_id}/{filename}", _pil_to_bytes(crop_img)
+                )
 
                 # Mistral: per-crop clothing metadata
                 try:
@@ -278,17 +318,27 @@ async def analyze_catalog(files: List[UploadFile] = File(...)):
                 generated_error = None
                 try:
                     img_bytes = _gemini_generate_image(crop_img, metadata)
-                    gen_filename = f"{i}_{label}.png"
-                    with open(gen_dir / gen_filename, "wb") as f:
-                        f.write(img_bytes)
-                    generated_url = f"/static/generated/{job_id}/{gen_filename}"
+                    generated_url = _upload_to_storage(
+                        "generated", f"{job_id}/{filename}", img_bytes
+                    )
                 except Exception as exc:
                     generated_error = str(exc)
+
+                # Insert crop row
+                sb.table("crops").insert({
+                    "job_id": job_id,
+                    "label": label,
+                    "confidence": conf,
+                    "crop_url": crop_url,
+                    "generated_url": generated_url,
+                    "generated_error": generated_error,
+                    "metadata": metadata,
+                }).execute()
 
                 crops.append({
                     "label":           label,
                     "confidence":      conf,
-                    "url":             f"/static/results/{job_id}/{filename}",
+                    "url":             crop_url,
                     "generated_url":   generated_url,
                     "generated_error": generated_error,
                     "metadata":        metadata,
@@ -296,18 +346,9 @@ async def analyze_catalog(files: List[UploadFile] = File(...)):
 
             crops.sort(key=lambda c: c["confidence"], reverse=True)
 
-            job_data = {
-                "filename":       upload.filename,
-                "job_id":         job_id,
-                "scene_analysis": scene,
-                "crops":          crops,
-            }
-            with open(job_dir / "metadata.json", "w") as f:
-                json.dump(job_data, f, indent=2)
-
             output.append({
                 "filename":       upload.filename,
-                "rendered_url":   f"/static/results/{job_id}/rendered.png",
+                "rendered_url":   rendered_url,
                 "scene_analysis": scene,
                 "crops":          crops,
             })

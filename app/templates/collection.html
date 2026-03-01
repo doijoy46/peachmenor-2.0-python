@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Collection — {{ app_name | capitalize }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; height: 100%; }
+
+    body {
+      background: #000;
+      color: #111;
+      font-family: 'Helvetica Neue', Helvetica, Arial, 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px 0;
+    }
+
+    /* ── Phone Frame ─────────────────────────────── */
+    .phone-frame {
+      width: 402px;
+      height: min(874px, 95vh);
+      background: #fff;
+      border-radius: 48px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 0 3px #1a1a1a, 0 0 0 6px #333, 0 20px 60px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island */
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 36px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 200;
+    }
+
+    /* ── Nav ──────────────────────────────────────── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 56px 20px 14px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .nav-brand {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #111;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #555;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: #111; }
+    .nav-links a.active {
+      color: #111;
+      border-bottom: 1px solid #111;
+      padding-bottom: 2px;
+    }
+
+    /* ── Upload Section ──────────────────────────── */
+    .upload-section {
+      padding: 32px 24px 8px;
+      text-align: center;
+    }
+
+    #file-input { display: none; }
+
+    .upload-btn {
+      display: inline-block;
+      padding: 13px 36px;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #111;
+      background: none;
+      border: 1px solid #111;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .upload-btn:hover { background: #111; color: #fff; }
+
+    .file-count {
+      display: none;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #999;
+      margin-top: 12px;
+    }
+
+    .analyze-btn {
+      display: none;
+      margin: 12px auto 0;
+      padding: 13px 36px;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #fff;
+      background: #111;
+      border: 1px solid #111;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.3s;
+    }
+
+    .analyze-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .upload-loader {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 24px 0;
+    }
+
+    .upload-loader.active { display: flex; }
+
+    .success-section {
+      display: none;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .success-section.visible { display: block; }
+
+    .success-icon {
+      font-size: 28px;
+      color: #111;
+      margin-bottom: 8px;
+    }
+
+    .success-title {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .success-sub {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      color: #999;
+    }
+
+    /* ── Page Header ─────────────────────────────── */
+    .page-header {
+      padding: 40px 24px 0;
+    }
+
+    .page-title {
+      font-size: 36px;
+      font-weight: 200;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: #111;
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 32px;
+    }
+
+    .page-divider {
+      border: none;
+      border-top: 1px solid #111;
+      margin-bottom: 32px;
+    }
+
+    /* ── Loading ──────────────────────────────────── */
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 100px 0;
+    }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 1.5px solid #eee;
+      border-top-color: #111;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-text {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #999;
+    }
+
+    /* ── Empty State ──────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 80px 24px;
+    }
+
+    .empty-title {
+      font-size: 14px;
+      font-weight: 300;
+      color: #999;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .empty-cta {
+      display: inline-block;
+      padding: 13px 36px;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #111;
+      text-decoration: none;
+      border: 1px solid #111;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .empty-cta:hover { background: #111; color: #fff; }
+
+    /* ── Collection Content ───────────────────────── */
+    .collection {
+      padding: 0 24px 48px;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .collection::-webkit-scrollbar { display: none; }
+
+    /* Job group */
+    .job-group {
+      margin-bottom: 48px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .job-group.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .job-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .job-filename {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #999;
+    }
+
+    .job-date {
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 1.5px;
+      color: #bbb;
+    }
+
+    /* Scene analysis */
+    .scene-block {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .scene-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 6px;
+    }
+
+    .scene-desc {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .scene-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .scene-tag {
+      padding: 4px 10px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 1px solid #ddd;
+      color: #666;
+    }
+
+    .scene-notes {
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 300;
+      font-style: italic;
+      color: #999;
+    }
+
+    /* Crop grid */
+    .crops-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .crop-card {
+      background: #fff;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: default;
+    }
+
+    .crop-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    }
+
+    .crop-img-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+
+    .crop-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+
+    .crop-card:hover .crop-img-wrap img { transform: scale(1.03); }
+
+    .generated-badge {
+      position: absolute;
+      top: 8px; right: 8px;
+      padding: 3px 8px;
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(4px);
+      color: #111;
+      text-decoration: none;
+    }
+
+    .crop-info {
+      padding: 10px 2px 14px;
+    }
+
+    .crop-label {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #111;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .crop-conf {
+      font-size: 9px;
+      font-weight: 300;
+      color: #aaa;
+      letter-spacing: 1px;
+    }
+
+    .crop-meta {
+      margin-top: 4px;
+      font-size: 10px;
+      font-weight: 300;
+      color: #777;
+      letter-spacing: 0.5px;
+      line-height: 1.5;
+    }
+
+    .crop-meta-error {
+      color: #c55;
+      font-style: italic;
+    }
+
+    .crop-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .crop-actions a {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #999;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .crop-actions a:hover { color: #111; }
+
+    .no-items {
+      font-size: 12px;
+      font-weight: 300;
+      color: #aaa;
+      letter-spacing: 1px;
+      padding: 32px 0;
+      text-align: center;
+    }
+
+    /* ── Footer ──────────────────────────────────── */
+    .footer {
+      margin-top: auto;
+      border-top: 1px solid #eee;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #bbb;
+    }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 440px) {
+      body { padding: 0; }
+      .phone-frame {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .phone-frame::before { display: none; }
+      .nav { padding-top: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="phone-frame">
+
+  <!-- ── Nav ──────────────────────────────────────── -->
+  <nav class="nav">
+    <a href="/" class="nav-brand">{{ app_name }}</a>
+    <ul class="nav-links">
+      <li><a href="/collection" class="active">Collection</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Upload ──────────────────────────────────── -->
+  <section class="upload-section">
+    <input type="file" id="file-input" accept="image/*" multiple>
+    <button class="upload-btn" id="upload-btn">Upload</button>
+    <p class="file-count" id="file-count"></p>
+    <button class="analyze-btn" id="analyze-btn" disabled>Analyze Catalog</button>
+    <div class="upload-loader" id="upload-loader">
+      <div class="spinner"></div>
+      <span class="loader-text">Analyzing garments</span>
+    </div>
+    <div class="success-section" id="success-section">
+      <div class="success-icon">&#10003;</div>
+      <p class="success-title">Analysis Complete</p>
+      <p class="success-sub" id="success-sub"></p>
+    </div>
+  </section>
+
+  <!-- ── Page Header ──────────────────────────────── -->
+  <div class="page-header">
+    <h1 class="page-title">Collection</h1>
+    <p class="page-subtitle" id="item-count"></p>
+    <hr class="page-divider">
+  </div>
+
+  <!-- ── Content ──────────────────────────────────── -->
+  <div class="collection" id="collection-content">
+    <div class="loader" id="loader">
+      <div class="spinner"></div>
+      <span class="loader-text">Loading collection</span>
+    </div>
+  </div>
+
+  <!-- ── Footer ───────────────────────────────────── -->
+  <footer class="footer">
+    <p class="footer-text">&copy; 2026 {{ app_name | capitalize }}</p>
+  </footer>
+
+  </div><!-- .phone-frame -->
+
+  <script>
+    const content   = document.getElementById('collection-content');
+    const loader    = document.getElementById('loader');
+    const itemCount = document.getElementById('item-count');
+
+    async function loadCollection() {
+      try {
+        const res  = await fetch('/api/v1/catalog/collection');
+        const data = await res.json();
+        content.innerHTML = '';
+        renderCollection(data.collection);
+      } catch (err) {
+        console.error(err);
+        content.innerHTML = '<p class="no-items">Failed to load collection.</p>';
+      }
+    }
+
+    function renderCollection(collection) {
+      if (!collection || collection.length === 0) {
+        content.innerHTML = `
+          <div class="empty-state">
+            <p class="empty-title">No items in your collection yet</p>
+            <a href="#" class="empty-cta">Upload your first garment</a>
+          </div>`;
+        itemCount.textContent = '0 items';
+        return;
+      }
+
+      const totalCrops = collection.reduce((sum, job) => sum + (job.crops ? job.crops.length : 0), 0);
+      itemCount.textContent = `${totalCrops} item${totalCrops !== 1 ? 's' : ''} \u00b7 ${collection.length} upload${collection.length !== 1 ? 's' : ''}`;
+
+      collection.forEach((job, idx) => {
+        const group = document.createElement('div');
+        group.className = 'job-group';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'job-header';
+
+        const fname = document.createElement('span');
+        fname.className = 'job-filename';
+        fname.textContent = job.filename || 'Untitled';
+
+        const date = document.createElement('span');
+        date.className = 'job-date';
+        if (job.created_at) {
+          const d = new Date(job.created_at);
+          date.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        header.append(fname, date);
+        group.appendChild(header);
+
+        // Scene analysis
+        const scene = job.scene_analysis;
+        if (scene && !scene.error) {
+          const block = document.createElement('div');
+          block.className = 'scene-block';
+
+          const label = document.createElement('p');
+          label.className = 'scene-label';
+          label.textContent = 'Scene Analysis';
+
+          const desc = document.createElement('p');
+          desc.className = 'scene-desc';
+          desc.textContent = scene.scene_description || '';
+
+          block.append(label, desc);
+
+          const tagData = [
+            scene.overall_style,
+            scene.occasion,
+            ...(Array.isArray(scene.season) ? scene.season : [])
+          ].filter(Boolean);
+
+          if (tagData.length) {
+            const tags = document.createElement('div');
+            tags.className = 'scene-tags';
+            tagData.forEach(t => {
+              const tag = document.createElement('span');
+              tag.className = 'scene-tag';
+              tag.textContent = t;
+              tags.appendChild(tag);
+            });
+            block.appendChild(tags);
+          }
+
+          if (scene.styling_notes) {
+            const notes = document.createElement('p');
+            notes.className = 'scene-notes';
+            notes.textContent = scene.styling_notes;
+            block.appendChild(notes);
+          }
+
+          group.appendChild(block);
+        }
+
+        // Crops
+        const crops = job.crops || [];
+        if (crops.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'no-items';
+          empty.textContent = 'No garments detected';
+          group.appendChild(empty);
+        } else {
+          const grid = document.createElement('div');
+          grid.className = 'crops-grid';
+
+          crops.forEach(crop => {
+            const card = document.createElement('div');
+            card.className = 'crop-card';
+
+            // Image
+            const imgWrap = document.createElement('div');
+            imgWrap.className = 'crop-img-wrap';
+
+            const img = document.createElement('img');
+            img.src = crop.crop_url;
+            img.alt = crop.label || 'Clothing item';
+            img.loading = 'lazy';
+            imgWrap.appendChild(img);
+
+            if (crop.generated_url) {
+              const badge = document.createElement('a');
+              badge.className = 'generated-badge';
+              badge.href = crop.generated_url;
+              badge.target = '_blank';
+              badge.textContent = 'AI Generated';
+              imgWrap.appendChild(badge);
+            }
+
+            card.appendChild(imgWrap);
+
+            // Info
+            const info = document.createElement('div');
+            info.className = 'crop-info';
+
+            const lbl = document.createElement('div');
+            lbl.className = 'crop-label';
+            const conf = crop.confidence != null ? Math.round(crop.confidence * 100) : '\u2014';
+            lbl.innerHTML = `<span>${crop.label || 'Item'}</span><span class="crop-conf">${conf}%</span>`;
+            info.appendChild(lbl);
+
+            // Metadata
+            const metaEl = document.createElement('div');
+            metaEl.className = 'crop-meta';
+            const m = crop.metadata || {};
+            if (m.error) {
+              metaEl.classList.add('crop-meta-error');
+              metaEl.textContent = 'Metadata unavailable';
+            } else {
+              const parts = [];
+              if (Array.isArray(m.color) && m.color.length) parts.push(m.color.join(', '));
+              if (m.material) parts.push(m.material);
+              if (m.pattern && m.pattern !== 'solid') parts.push(m.pattern);
+              if (m.style) parts.push(m.style);
+              metaEl.textContent = parts.join(' / ');
+              card.title = JSON.stringify(m, null, 2);
+            }
+            info.appendChild(metaEl);
+
+            // Actions
+            const actions = document.createElement('div');
+            actions.className = 'crop-actions';
+
+            const dlOrig = document.createElement('a');
+            dlOrig.href = crop.crop_url;
+            dlOrig.download = `${crop.label || 'item'}.png`;
+            dlOrig.textContent = 'Download';
+            actions.appendChild(dlOrig);
+
+            if (crop.generated_url) {
+              const dlGen = document.createElement('a');
+              dlGen.href = crop.generated_url;
+              dlGen.download = `${crop.label || 'item'}_generated.png`;
+              dlGen.textContent = 'AI Version';
+              actions.appendChild(dlGen);
+            }
+
+            info.appendChild(actions);
+            card.appendChild(info);
+            grid.appendChild(card);
+          });
+
+          group.appendChild(grid);
+        }
+
+        content.appendChild(group);
+
+        // Staggered fade-in
+        setTimeout(() => group.classList.add('visible'), idx * 150);
+      });
+    }
+
+    loadCollection();
+
+    // ── Upload Logic ──────────────────────────────
+    const uploadBtn    = document.getElementById('upload-btn');
+    const fileInput    = document.getElementById('file-input');
+    const fileCountEl  = document.getElementById('file-count');
+    const analyzeBtn   = document.getElementById('analyze-btn');
+    const uploadLoader = document.getElementById('upload-loader');
+    const successEl    = document.getElementById('success-section');
+    const successSub   = document.getElementById('success-sub');
+
+    let selectedFiles = [];
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      selectedFiles = Array.from(e.target.files);
+      if (selectedFiles.length > 0) {
+        fileCountEl.textContent = `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected`;
+        fileCountEl.style.display = 'block';
+        analyzeBtn.style.display = 'block';
+        analyzeBtn.disabled = false;
+      }
+    });
+
+    analyzeBtn.addEventListener('click', async () => {
+      if (!selectedFiles.length) return;
+
+      analyzeBtn.disabled = true;
+      analyzeBtn.style.display = 'none';
+      uploadLoader.classList.add('active');
+      successEl.classList.remove('visible');
+
+      const formData = new FormData();
+      selectedFiles.forEach(f => formData.append('files', f));
+
+      try {
+        const res  = await fetch('/api/v1/catalog/analyze', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        const totalCrops = data.results.reduce((sum, r) => sum + (r.crops ? r.crops.length : 0), 0);
+        successSub.textContent = `${totalCrops} item${totalCrops !== 1 ? 's' : ''} detected and cataloged`;
+        successEl.querySelector('.success-icon').textContent = '\u2713';
+        successEl.querySelector('.success-title').textContent = 'Analysis Complete';
+        successEl.classList.add('visible');
+
+        // Reload collection to show new items
+        content.innerHTML = '<div class="loader" id="loader"><div class="spinner"></div><span class="loader-text">Loading collection</span></div>';
+        await loadCollection();
+      } catch (err) {
+        console.error(err);
+        successSub.textContent = 'Analysis failed. Please try again.';
+        successEl.querySelector('.success-icon').textContent = '!';
+        successEl.querySelector('.success-title').textContent = 'Error';
+        successEl.classList.add('visible');
+      } finally {
+        uploadLoader.classList.remove('active');
+        fileCountEl.style.display = 'none';
+        selectedFiles = [];
+        fileInput.value = '';
+        analyzeBtn.style.display = 'none';
+      }
+    });
+  </script>
+
+</body>
+</html>

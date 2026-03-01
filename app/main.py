@@ -21,3 +21,8 @@ app.include_router(v1_router, prefix="/api/v1")
 @app.get("/", response_class=HTMLResponse)
 def homepage(request: Request):
     return templates.TemplateResponse(request, "index.html", {"app_name": settings.app_name})
+
+
+@app.get("/collection", response_class=HTMLResponse)
+def collection_page(request: Request):
+    return templates.TemplateResponse(request, "collection.html", {"app_name": settings.app_name})

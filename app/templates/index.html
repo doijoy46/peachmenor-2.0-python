@@ -2,737 +2,178 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ app_name | capitalize }} — Wardrobe Catalog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>{{ app_name | capitalize }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:          #0f0d0b;
-      --wood-dark:   #3d1a06;
-      --wood-mid:    #7b3a14;
-      --wood-light:  #9a5020;
-      --gold:        #c8934a;
-      --interior:    #ece5d8;
-      --handle:      #d0c8b8;
-    }
-
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; height: 100%; }
 
     body {
-      background: var(--bg);
-      color: #f0e8da;
-      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #000;
+      color: #111;
+      font-family: 'Helvetica Neue', Helvetica, Arial, 'Inter', sans-serif;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px 0;
     }
 
-    /* ── Hero ───────────────────────────────────── */
-    .hero {
+    /* ── Phone Frame ─────────────────────────────── */
+    .phone-frame {
+      width: 402px;
+      height: min(874px, 95vh);
+      background: #fff;
+      border-radius: 48px;
+      overflow: hidden;
       position: relative;
-      height: 100vh;
+      box-shadow: 0 0 0 3px #1a1a1a, 0 0 0 6px #333, 0 20px 60px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.2rem;
-      text-align: center;
-      background: radial-gradient(ellipse 70% 55% at 50% 42%, #2b1508 0%, var(--bg) 100%);
-      padding: 2rem;
     }
 
-    .hero-eyebrow {
-      font-size: 0.7rem;
-      letter-spacing: 7px;
+    /* Dynamic Island */
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 36px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 200;
+    }
+
+    /* ── Nav ──────────────────────────────────────── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 56px 20px 14px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .nav-brand {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0.65;
+      color: #111;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #555;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: #111; }
+
+    /* ── Hero ─────────────────────────────────────── */
+    .hero {
+      padding: 72px 24px 48px;
+      text-align: center;
     }
 
     .hero-title {
-      font-size: clamp(2.8rem, 9vw, 5.5rem);
-      font-weight: normal;
-      letter-spacing: 0.18em;
+      font-size: 42px;
+      font-weight: 200;
+      letter-spacing: -0.02em;
+      line-height: 1.02;
       text-transform: uppercase;
-      color: #f0e8da;
-      line-height: 1;
+      color: #111;
+      margin-bottom: 16px;
     }
 
     .hero-sub {
-      font-size: 1rem;
-      font-style: italic;
-      color: #7a6655;
-      letter-spacing: 0.05em;
-    }
-
-    .scroll-cue {
-      position: absolute;
-      bottom: 2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--gold);
-      opacity: 0.45;
-      font-size: 0.65rem;
-      letter-spacing: 5px;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4px;
       text-transform: uppercase;
+      color: #888;
+      margin-bottom: 40px;
     }
 
-    .scroll-line {
-      width: 1px;
-      height: 42px;
-      background: var(--gold);
-      transform-origin: top;
-      animation: drawLine 2s ease-in-out infinite;
-    }
-
-    @keyframes drawLine {
-      0%   { transform: scaleY(0); transform-origin: top;    opacity: 1; }
-      49%  { transform: scaleY(1); transform-origin: top;    opacity: 1; }
-      50%  { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
-      100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
-    }
-
-    /* ── Scroll section ─────────────────────────── */
-    .scroll-section {
-      height: 300vh;
-      position: relative;
-    }
-
-    .sticky-container {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(ellipse 55% 65% at 50% 50%, #1c0e04 0%, var(--bg) 100%);
-      overflow: hidden;
-    }
-
-    /* ── Wardrobe ───────────────────────────────── */
-    .wardrobe-scene {
-      perspective: 1200px;
-      perspective-origin: 50% 44%;
-    }
-
-    .wardrobe {
-      position: relative;
-      width: 480px;
-      height: 700px;
-      transform-style: preserve-3d;
-    }
-
-    /* Outer casing / frame */
-    .w-casing {
-      position: absolute;
-      inset: -12px -14px 0;
-      background:
-        repeating-linear-gradient(91deg,
-          transparent 0, transparent 9px,
-          rgba(0,0,0,0.04) 9px, rgba(0,0,0,0.04) 10px),
-        linear-gradient(180deg, #3a1604 0%, #4d2008 35%, #3d1a06 70%, #3a1604 100%);
-      border-radius: 3px 3px 0 0;
-      box-shadow:
-        0 0 0 2px #220e02,
-        0 0 0 4px #3a1604,
-        0 30px 90px rgba(0,0,0,0.95),
-        0 8px 24px rgba(0,0,0,0.6),
-        inset 0 0 24px rgba(0,0,0,0.45);
-    }
-
-    /* Decorative top cornice */
-    .w-cornice {
-      position: absolute;
-      top: -28px;
-      left: -18px;
-      right: -18px;
-      height: 28px;
-      background: linear-gradient(180deg, #5a2a0a 0%, #3d1a06 100%);
-      border-radius: 2px 2px 0 0;
-      box-shadow: 0 -6px 16px rgba(0,0,0,0.55), inset 0 -2px 4px rgba(0,0,0,0.3);
-    }
-
-    /* Cornice detail line */
-    .w-cornice::after {
-      content: '';
-      position: absolute;
-      bottom: 4px;
-      left: 10px;
-      right: 10px;
-      height: 1px;
-      background: rgba(255,200,100,0.12);
-    }
-
-    /* Floor shadow */
-    .w-shadow {
-      position: absolute;
-      bottom: -36px;
-      left: -8%;
-      right: -8%;
-      height: 36px;
-      background: radial-gradient(ellipse at 50% 0%, rgba(0,0,0,0.65) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    /* ── Interior ───────────────────────────────── */
-    .w-interior {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(175deg, #ddd5c4 0%, #ece5d8 18%, #e8e0d0 82%, #ddd5c4 100%);
-      overflow: hidden;
-    }
-
-    /* Side & top/bottom depth shading */
-    .w-interior::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(90deg, rgba(0,0,0,0.18) 0%, transparent 9%, transparent 91%, rgba(0,0,0,0.18) 100%),
-        linear-gradient(180deg, rgba(0,0,0,0.12) 0%, transparent 12%, transparent 86%, rgba(0,0,0,0.18) 100%);
-      pointer-events: none;
-    }
-
-    /* Hanging rod */
-    .rod {
-      position: absolute;
-      top: 38px;
-      left: 18px;
-      right: 18px;
-      height: 6px;
-      background: linear-gradient(180deg, #c8c8c8 0%, #aaa 40%, #888 65%, #aaa 100%);
-      border-radius: 3px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.28), inset 0 1px 1px rgba(255,255,255,0.35);
-    }
-
-    .rod::before, .rod::after {
-      content: '';
-      position: absolute;
-      top: -9px;
-      width: 8px;
-      height: 18px;
-      background: linear-gradient(90deg, #999, #ccc, #999);
-      border-radius: 2px;
-    }
-    .rod::before { left: 24px; }
-    .rod::after  { right: 24px; }
-
-    /* Hanger silhouettes */
-    .hangers {
-      position: absolute;
-      top: 44px;
-      left: 28px;
-      right: 28px;
-      display: flex;
-      gap: 22px;
-      justify-content: center;
-    }
-
-    .hanger { display: flex; flex-direction: column; align-items: center; opacity: 0.18; }
-    .hanger-stem { width: 2px; height: 20px; background: #6a5040; }
-    .hanger-bar  { width: 38px; height: 16px; border-top: 2px solid #6a5040; border-radius: 50% 50% 0 0; }
-
-    /* Upload area — controlled entirely by JS */
-    .upload-area {
-      position: absolute;
-      bottom: 72px;
-      left: 50%;
-      transform: translateX(-50%) translateY(24px) scale(0.82);
-      opacity: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-      white-space: nowrap;
-      pointer-events: none;
-    }
-
-    .upload-eyebrow {
-      font-size: 0.62rem;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      color: #8a7260;
-    }
-
-    .upload-btn {
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 13px 32px;
-      background: linear-gradient(140deg, #6b3010 0%, #8b4513 52%, #7a3a10 100%);
-      color: #f0e0c8;
-      border-radius: 2px;
-      font-family: 'Georgia', serif;
-      font-size: 0.82rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      box-shadow:
-        0 4px 22px rgba(0,0,0,0.42),
-        inset 0 1px 0 rgba(255,200,100,0.14),
-        inset 0 -1px 0 rgba(0,0,0,0.28);
-      transition: box-shadow 0.2s, background 0.2s;
-      user-select: none;
-    }
-
-    .upload-btn:hover {
-      background: linear-gradient(140deg, #7a3810 0%, #9a5020 52%, #8a4410 100%);
-      box-shadow: 0 6px 28px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,200,100,0.2), inset 0 -1px 0 rgba(0,0,0,0.3);
-    }
-
-    /* Upload icon (mini box with arrow) */
-    .upload-icon {
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid rgba(240,224,200,0.7);
-      border-radius: 1px;
-      position: relative;
-      flex-shrink: 0;
-    }
-    .upload-icon::before {
-      content: '';
-      position: absolute;
-      top: 2px; left: 50%;
-      transform: translateX(-50%);
-      width: 1.5px;
-      height: 6px;
-      background: rgba(240,224,200,0.7);
-    }
-    .upload-icon::after {
-      content: '';
-      position: absolute;
-      top: 1px; left: 50%;
-      transform: translateX(-50%);
-      border-left: 3px solid transparent;
-      border-right: 3px solid transparent;
-      border-bottom: 4px solid rgba(240,224,200,0.7);
-    }
-
-    #file-input {
-      position: absolute;
-      width: 0; height: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* ── Detection results ──────────────────────── */
-    .results-area {
-      width: 420px;
-      max-height: 130px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 0 4px;
-    }
-
-    .result-file {
-      font-size: 0.6rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #8a7260;
-      border-bottom: 1px solid rgba(139,69,19,0.2);
-      padding-bottom: 4px;
-    }
-
-    .result-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
-
-    .result-tag {
-      padding: 3px 9px;
-      background: rgba(139,69,19,0.12);
-      border: 1px solid rgba(139,69,19,0.28);
-      border-radius: 20px;
-      font-size: 0.62rem;
-      letter-spacing: 1.5px;
-      color: #6b3a1a;
-      text-transform: capitalize;
-    }
-
-    .result-empty {
-      font-size: 0.65rem;
-      font-style: italic;
-      color: #aaa;
-      letter-spacing: 1px;
-    }
-
-    .upload-btn.loading {
-      opacity: 0.6;
-      pointer-events: none;
-      cursor: default;
-    }
-
-    /* ── Crop thumbnails ────────────────────────── */
-    .crops-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      padding: 0 4px;
-    }
-
-    .crop-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .crop-thumb {
-      width: 72px;
-      height: 72px;
-      object-fit: cover;
-      border-radius: 2px;
-      border: 1px solid rgba(139,69,19,0.25);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    }
-
-    .crop-label {
-      font-size: 0.55rem;
-      letter-spacing: 1.5px;
-      text-transform: capitalize;
-      color: #7a6050;
-      text-align: center;
-      max-width: 72px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .crop-download {
-      font-size: 0.55rem;
-      letter-spacing: 1px;
-      color: rgba(139,69,19,0.6);
-      text-decoration: none;
-      text-transform: uppercase;
-    }
-
-    .crop-download:hover { color: rgba(139,69,19,1); }
-
-    .crop-meta {
-      font-size: 0.5rem;
-      letter-spacing: 1px;
-      color: #9a8070;
-      text-align: center;
-      max-width: 76px;
-      line-height: 1.5;
-    }
-
-    .crop-meta-error { color: #b07060; font-style: italic; }
-
-    /* ── Doors ──────────────────────────────────── */
-    .door {
-      position: absolute;
-      top: 0;
-      width: 50%;
-      height: 100%;
-      transform-style: preserve-3d;
-      will-change: transform;
-    }
-
-    .door-left  { left: 0;  transform-origin: 0%   50%; }
-    .door-right { right: 0; transform-origin: 100% 50%; }
-
-    .door-face {
-      position: absolute;
-      inset: 0;
-      background:
-        /* fine grain */
-        repeating-linear-gradient(91.5deg,
-          transparent 0, transparent 7px,
-          rgba(0,0,0,0.028) 7px, rgba(0,0,0,0.028) 8px),
-        /* subtle horizontal shimmer */
-        repeating-linear-gradient(180deg,
-          rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px,
-          transparent 1px, transparent 55px),
-        /* base mahogany gradient */
-        linear-gradient(168deg,
-          #7a3818 0%, #9a4c22 10%,
-          #7a3818 26%, #8c4420 44%,
-          #6e3214 64%, #8c4420 82%,
-          #7a3818 100%);
-    }
-
-    /* Directional sheen overlay */
-    .door-face::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(148deg, rgba(255,255,255,0.07) 0%, transparent 42%, rgba(0,0,0,0.08) 100%);
-      pointer-events: none;
-    }
-
-    /* Center gap / seam */
-    .door-left  .door-face { border-right: 2px solid rgba(0,0,0,0.55); }
-    .door-right .door-face { border-left:  2px solid rgba(0,0,0,0.55); }
-
-    /* Decorative inset panels */
-    .door-panel {
-      position: absolute;
-      left: 13px;
-      right: 13px;
-      border-radius: 1px;
-      background:
-        repeating-linear-gradient(91.5deg,
-          transparent 0, transparent 7px,
-          rgba(0,0,0,0.025) 7px, rgba(0,0,0,0.025) 8px),
-        linear-gradient(168deg, #7a3818 0%, #8c4420 45%, #7a3818 100%);
-      box-shadow:
-        inset 2px 2px 4px rgba(0,0,0,0.42),
-        inset -1px -1px 2px rgba(255,200,100,0.07),
-        0 0 0 1.5px rgba(0,0,0,0.22),
-        1px 1px 0 rgba(255,200,100,0.09);
-    }
-
-    .panel-top    { top: 16px;    height: 38%; }
-    .panel-bottom { bottom: 16px; height: calc(62% - 50px); }
-
-    /* Metal handle */
-    .door-handle {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 9px;
-      height: 54px;
-      background: linear-gradient(90deg,
-        #5a5a5a 0%, #aaa 16%, #ddd 33%, #eee 50%,
-        #ddd 67%, #aaa 84%, #5a5a5a 100%);
-      border-radius: 4.5px;
-      box-shadow: 1px 2px 6px rgba(0,0,0,0.6), inset 0 0 2px rgba(255,255,255,0.18);
-    }
-
-    .door-left  .door-handle { right: 13px; }
-    .door-right .door-handle { left:  13px; }
-
-    /* ── Footer ─────────────────────────────────── */
+    /* ── Footer ──────────────────────────────────── */
     .footer {
-      height: 45vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg);
+      margin-top: auto;
+      border-top: 1px solid #eee;
+      padding: 28px;
+      text-align: center;
     }
 
     .footer-text {
-      font-size: 0.65rem;
-      letter-spacing: 5px;
+      font-size: 9px;
+      letter-spacing: 3px;
       text-transform: uppercase;
-      color: #2e2018;
+      color: #bbb;
+    }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 440px) {
+      body { padding: 0; }
+      .phone-frame {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .phone-frame::before { display: none; }
+      .nav { padding-top: 16px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ── Hero ──────────────────────────────────── -->
+  <div class="phone-frame">
+
+  <!-- ── Nav ──────────────────────────────────────── -->
+  <nav class="nav">
+    <a href="/" class="nav-brand">{{ app_name }}</a>
+    <ul class="nav-links">
+      <li><a href="/collection">Collection</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Hero ──────────────────────────────────────── -->
   <section class="hero">
-    <span class="hero-eyebrow">Est. 2025</span>
-    <h1 class="hero-title">{{ app_name | capitalize }}</h1>
-    <p class="hero-sub">Your personal wardrobe catalog</p>
-    <div class="scroll-cue">
-      <span>Open</span>
-      <div class="scroll-line"></div>
-    </div>
+    <h1 class="hero-title">Your<br>Wardrobe,<br>Cataloged.</h1>
+    <p class="hero-sub">AI-powered garment detection</p>
   </section>
 
-  <!-- ── Scroll + Wardrobe ──────────────────────── -->
-  <section class="scroll-section" id="scroll-section">
-    <div class="sticky-container">
-
-      <div class="wardrobe-scene">
-        <div class="wardrobe">
-          <div class="w-shadow"></div>
-          <div class="w-cornice"></div>
-          <div class="w-casing"></div>
-
-          <!-- Interior -->
-          <div class="w-interior">
-            <div class="rod"></div>
-            <div class="hangers">
-              <div class="hanger"><div class="hanger-stem"></div><div class="hanger-bar"></div></div>
-              <div class="hanger"><div class="hanger-stem"></div><div class="hanger-bar"></div></div>
-              <div class="hanger"><div class="hanger-stem"></div><div class="hanger-bar"></div></div>
-              <div class="hanger"><div class="hanger-stem"></div><div class="hanger-bar"></div></div>
-              <div class="hanger"><div class="hanger-stem"></div><div class="hanger-bar"></div></div>
-            </div>
-            <div class="upload-area" id="upload-area">
-              <span class="upload-eyebrow" id="upload-eyebrow">Begin your catalog</span>
-              <label class="upload-btn" id="upload-btn" for="file-input">
-                <span class="upload-icon"></span>
-                <span id="btn-text">Upload to Catalog</span>
-              </label>
-              <input type="file" id="file-input" accept="image/*" multiple>
-              <div class="results-area" id="results-area" style="display:none"></div>
-            </div>
-          </div>
-
-          <!-- Left door -->
-          <div class="door door-left" id="door-left">
-            <div class="door-face">
-              <div class="door-panel panel-top"></div>
-              <div class="door-panel panel-bottom"></div>
-              <div class="door-handle"></div>
-            </div>
-          </div>
-
-          <!-- Right door -->
-          <div class="door door-right" id="door-right">
-            <div class="door-face">
-              <div class="door-panel panel-top"></div>
-              <div class="door-panel panel-bottom"></div>
-              <div class="door-handle"></div>
-            </div>
-          </div>
-        </div><!-- /.wardrobe -->
-      </div><!-- /.wardrobe-scene -->
-
-    </div><!-- /.sticky-container -->
-  </section>
-
-  <!-- ── Footer ─────────────────────────────────── -->
+  <!-- ── Footer ────────────────────────────────────── -->
   <footer class="footer">
-    <p class="footer-text">{{ app_name | capitalize }} &copy; 2025</p>
+    <p class="footer-text">&copy; 2026 {{ app_name | capitalize }}</p>
   </footer>
 
-  <script>
-    const doorLeft   = document.getElementById('door-left');
-    const doorRight  = document.getElementById('door-right');
-    const uploadArea = document.getElementById('upload-area');
-    const section    = document.getElementById('scroll-section');
+  </div><!-- .phone-frame -->
 
-    function easeInOut(t) {
-      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-    }
-
-    function update() {
-      const scrolled  = window.scrollY - section.offsetTop;
-      const total     = section.offsetHeight - window.innerHeight;
-      const raw       = Math.max(0, Math.min(1, scrolled / total));
-      const eased     = easeInOut(raw);
-
-      // Doors open to 82° at full progress
-      const angle = eased * 82;
-      doorLeft.style.transform  = `rotateY(-${angle}deg)`;
-      doorRight.style.transform = `rotateY(${angle}deg)`;
-
-      // Upload area fades in after doors are 60% open
-      if (raw > 0.6) {
-        const fade  = Math.min(1, (raw - 0.6) / 0.35);
-        const ty    = 24 * (1 - fade);
-        const scale = 0.82 + 0.18 * fade;
-        uploadArea.style.opacity        = fade;
-        uploadArea.style.transform      = `translateX(-50%) translateY(${ty}px) scale(${scale})`;
-        uploadArea.style.pointerEvents  = 'auto';
-      } else {
-        uploadArea.style.opacity        = 0;
-        uploadArea.style.transform      = 'translateX(-50%) translateY(24px) scale(0.82)';
-        uploadArea.style.pointerEvents  = 'none';
-      }
-    }
-
-    window.addEventListener('scroll', update, { passive: true });
-    update();
-
-    const btnText    = document.getElementById('btn-text');
-    const uploadBtn  = document.getElementById('upload-btn');
-    const resultsDiv = document.getElementById('results-area');
-    const eyebrow    = document.getElementById('upload-eyebrow');
-
-    document.getElementById('file-input').addEventListener('change', async e => {
-      const files = Array.from(e.target.files);
-      if (!files.length) return;
-
-      // Loading state
-      btnText.textContent = 'Analyzing…';
-      uploadBtn.classList.add('loading');
-      resultsDiv.style.display = 'none';
-      resultsDiv.innerHTML = '';
-
-      const formData = new FormData();
-      files.forEach(f => formData.append('files', f));
-
-      try {
-        const res  = await fetch('/api/v1/catalog/analyze', { method: 'POST', body: formData });
-        const data = await res.json();
-
-        // Build crop grids
-        data.results.forEach(item => {
-          const fileEl = document.createElement('div');
-          fileEl.className = 'result-file';
-          fileEl.textContent = item.filename;
-          resultsDiv.appendChild(fileEl);
-
-          if (!item.crops || item.crops.length === 0) {
-            const empty = document.createElement('span');
-            empty.className = 'result-empty';
-            empty.textContent = 'No items detected';
-            resultsDiv.appendChild(empty);
-            return;
-          }
-
-          const grid = document.createElement('div');
-          grid.className = 'crops-grid';
-
-          item.crops.forEach(crop => {
-            const card = document.createElement('div');
-            card.className = 'crop-card';
-
-            const img = document.createElement('img');
-            img.className = 'crop-thumb';
-            img.src = crop.url;
-            img.alt = crop.label;
-
-            const lbl = document.createElement('span');
-            lbl.className = 'crop-label';
-            lbl.textContent = `${crop.label} ${Math.round(crop.confidence * 100)}%`;
-
-            const dl = document.createElement('a');
-            dl.className = 'crop-download';
-            dl.href = crop.url;
-            dl.download = `${crop.label}.png`;
-            dl.textContent = '↓ save';
-
-            // VLM metadata
-            const metaEl = document.createElement('div');
-            metaEl.className = 'crop-meta';
-            const m = crop.metadata || {};
-            if (m.error) {
-              metaEl.classList.add('crop-meta-error');
-              metaEl.textContent = 'metadata unavailable';
-            } else {
-              const color   = Array.isArray(m.color) ? m.color.join(', ') : (m.color || '');
-              const pattern = m.pattern || '';
-              const style   = m.style   || '';
-              metaEl.textContent = [color, pattern, style].filter(Boolean).join(' · ');
-              // Full metadata on hover
-              card.title = JSON.stringify(m, null, 2);
-            }
-
-            card.append(img, lbl, metaEl, dl);
-            grid.appendChild(card);
-          });
-
-          resultsDiv.appendChild(grid);
-        });
-
-        eyebrow.textContent = 'Detected items';
-        resultsDiv.style.display = 'flex';
-      } catch (err) {
-        console.error(err);
-        eyebrow.textContent = 'Analysis failed';
-      } finally {
-        btnText.textContent = 'Upload more';
-        uploadBtn.classList.remove('loading');
-        // Reset input so the same file can be re-selected
-        e.target.value = '';
-      }
-    });
-  </script>
 
 </body>
 </html>
