@@ -1,0 +1,6 @@
+SpeechRecognition
+elevenlabs
+pydub
+google-genai
+python-dotenv
+requests
