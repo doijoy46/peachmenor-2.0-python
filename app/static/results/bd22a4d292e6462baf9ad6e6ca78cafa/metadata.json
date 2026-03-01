@@ -1,0 +1,54 @@
+{
+  "filename": "IMG_3922.jpg",
+  "job_id": "bd22a4d292e6462baf9ad6e6ca78cafa",
+  "crops": [
+    {
+      "label": "clothing",
+      "confidence": 0.93,
+      "url": "/static/results/bd22a4d292e6462baf9ad6e6ca78cafa/0_clothing.png",
+      "metadata": {
+        "error": "API error occurred: Status 401 Content-Type \"application/json; charset=utf-8\". Body: {\"detail\":\"Unauthorized\"}"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.9,
+      "url": "/static/results/bd22a4d292e6462baf9ad6e6ca78cafa/1_clothing.png",
+      "metadata": {
+        "error": "API error occurred: Status 401 Content-Type \"application/json; charset=utf-8\". Body: {\"detail\":\"Unauthorized\"}"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.84,
+      "url": "/static/results/bd22a4d292e6462baf9ad6e6ca78cafa/2_shoes.png",
+      "metadata": {
+        "error": "API error occurred: Status 401 Content-Type \"application/json; charset=utf-8\". Body: {\"detail\":\"Unauthorized\"}"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.79,
+      "url": "/static/results/bd22a4d292e6462baf9ad6e6ca78cafa/3_shoes.png",
+      "metadata": {
+        "error": "API error occurred: Status 401 Content-Type \"application/json; charset=utf-8\". Body: {\"detail\":\"Unauthorized\"}"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.72,
+      "url": "/static/results/bd22a4d292e6462baf9ad6e6ca78cafa/4_clothing.png",
+      "metadata": {
+        "error": "API error occurred: Status 401 Content-Type \"application/json; charset=utf-8\". Body: {\"detail\":\"Unauthorized\"}"
+      }
+    },
+    {
+      "label": "accessories",
+      "confidence": 0.53,
+      "url": "/static/results/bd22a4d292e6462baf9ad6e6ca78cafa/5_accessories.png",
+      "metadata": {
+        "error": "API error occurred: Status 401 Content-Type \"application/json; charset=utf-8\". Body: {\"detail\":\"Unauthorized\"}"
+      }
+    }
+  ]
+}

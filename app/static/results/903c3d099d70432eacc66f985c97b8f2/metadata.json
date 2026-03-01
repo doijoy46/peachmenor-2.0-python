@@ -1,0 +1,136 @@
+{
+  "filename": "IMG_3922.jpg",
+  "job_id": "903c3d099d70432eacc66f985c97b8f2",
+  "scene_analysis": {
+    "error": "API error occurred: Status 429. Body: {\"object\":\"error\",\"message\":\"Rate limit exceeded\",\"type\":\"rate_limited\",\"param\":null,\"code\":\"1300\"}"
+  },
+  "crops": [
+    {
+      "label": "clothing",
+      "confidence": 0.93,
+      "url": "/static/results/903c3d099d70432eacc66f985c97b8f2/0_clothing.png",
+      "generated_url": null,
+      "metadata": {
+        "type": "pants",
+        "color": [
+          "black"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "denim",
+        "season": [
+          "spring",
+          "autumn",
+          "winter"
+        ],
+        "notes": "features a frayed hem and distressed details"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.9,
+      "url": "/static/results/903c3d099d70432eacc66f985c97b8f2/1_clothing.png",
+      "generated_url": null,
+      "metadata": {
+        "type": "jacket",
+        "color": [
+          "black",
+          "cream"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "leather",
+        "season": [
+          "autumn",
+          "winter"
+        ],
+        "notes": "features a quilted inner lining and zippered sleeves"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.84,
+      "url": "/static/results/903c3d099d70432eacc66f985c97b8f2/2_shoes.png",
+      "generated_url": null,
+      "metadata": {
+        "type": "sneaker",
+        "color": [
+          "white",
+          "black"
+        ],
+        "pattern": "solid",
+        "style": "streetwear",
+        "material": "leather",
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "features visible stitching and a sleek design with a partially visible strap"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.79,
+      "url": "/static/results/903c3d099d70432eacc66f985c97b8f2/3_shoes.png",
+      "generated_url": null,
+      "metadata": {
+        "type": "sneakers",
+        "color": [
+          "white",
+          "blue"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "canvas",
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "distressed and worn-out appearance"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.72,
+      "url": "/static/results/903c3d099d70432eacc66f985c97b8f2/4_clothing.png",
+      "generated_url": null,
+      "metadata": {
+        "type": "jacket",
+        "color": [
+          "white"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "fleece",
+        "season": [
+          "autumn",
+          "winter"
+        ],
+        "notes": "features a full-length zipper and a high collar"
+      }
+    },
+    {
+      "label": "accessories",
+      "confidence": 0.53,
+      "url": "/static/results/903c3d099d70432eacc66f985c97b8f2/5_accessories.png",
+      "generated_url": null,
+      "metadata": {
+        "type": "sunglasses",
+        "color": [
+          "black"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "plastic",
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "reflective lenses and sporty design"
+      }
+    }
+  ]
+}

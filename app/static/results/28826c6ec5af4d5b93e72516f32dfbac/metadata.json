@@ -1,0 +1,129 @@
+{
+  "filename": "IMG_3922.jpg",
+  "job_id": "28826c6ec5af4d5b93e72516f32dfbac",
+  "crops": [
+    {
+      "label": "clothing",
+      "confidence": 0.93,
+      "url": "/static/results/28826c6ec5af4d5b93e72516f32dfbac/0_clothing.png",
+      "metadata": {
+        "type": "jeans",
+        "color": [
+          "dark blue",
+          "black"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "denim",
+        "season": [
+          "autumn",
+          "winter",
+          "spring"
+        ],
+        "notes": "features rips and distressing on the knees"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.9,
+      "url": "/static/results/28826c6ec5af4d5b93e72516f32dfbac/1_clothing.png",
+      "metadata": {
+        "type": "jacket",
+        "color": [
+          "black",
+          "cream"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "leather",
+        "season": [
+          "autumn",
+          "winter"
+        ],
+        "notes": "features a quilted inner lining and zippered pockets"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.84,
+      "url": "/static/results/28826c6ec5af4d5b93e72516f32dfbac/2_shoes.png",
+      "metadata": {
+        "type": "sneaker",
+        "color": [
+          "light blue",
+          "white"
+        ],
+        "pattern": "solid",
+        "style": "athletic",
+        "material": "canvas",
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "features a classic lace-up design with a slightly worn look"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.79,
+      "url": "/static/results/28826c6ec5af4d5b93e72516f32dfbac/3_shoes.png",
+      "metadata": {
+        "type": "sneakers",
+        "color": [
+          "white",
+          "light blue"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "canvas",
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "distressed and worn appearance with visible dirt marks"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.72,
+      "url": "/static/results/28826c6ec5af4d5b93e72516f32dfbac/4_clothing.png",
+      "metadata": {
+        "type": "jacket",
+        "color": [
+          "white",
+          "light gray"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "fleece",
+        "season": [
+          "autumn",
+          "winter"
+        ],
+        "notes": "features a full-length zipper and a high collar"
+      }
+    },
+    {
+      "label": "accessories",
+      "confidence": 0.53,
+      "url": "/static/results/28826c6ec5af4d5b93e72516f32dfbac/5_accessories.png",
+      "metadata": {
+        "type": "sunglasses",
+        "color": [
+          "black"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": null,
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "reflective lenses and sporty design"
+      }
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "filename": "IMG_3922.jpg",
+  "job_id": "b1231bd802bd4b7b9dc22387b637ac41",
+  "scene_analysis": {
+    "error": "API error occurred: Status 429. Body: {\"object\":\"error\",\"message\":\"Rate limit exceeded\",\"type\":\"rate_limited\",\"param\":null,\"code\":\"1300\"}"
+  },
+  "crops": [
+    {
+      "label": "clothing",
+      "confidence": 0.93,
+      "url": "/static/results/b1231bd802bd4b7b9dc22387b637ac41/0_clothing.png",
+      "generated_url": "/static/generated/b1231bd802bd4b7b9dc22387b637ac41/0_clothing.png",
+      "generated_error": null,
+      "metadata": {
+        "type": "jeans",
+        "color": [
+          "black"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "denim",
+        "season": [
+          "spring",
+          "autumn",
+          "winter"
+        ],
+        "notes": "features rips and distressing on the knees"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.9,
+      "url": "/static/results/b1231bd802bd4b7b9dc22387b637ac41/1_clothing.png",
+      "generated_url": "/static/generated/b1231bd802bd4b7b9dc22387b637ac41/1_clothing.png",
+      "generated_error": null,
+      "metadata": {
+        "type": "jacket",
+        "color": [
+          "black",
+          "cream"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "leather",
+        "season": [
+          "autumn",
+          "winter"
+        ],
+        "notes": "features a quilted inner lining and multiple zippered pockets"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.84,
+      "url": "/static/results/b1231bd802bd4b7b9dc22387b637ac41/2_shoes.png",
+      "generated_url": "/static/generated/b1231bd802bd4b7b9dc22387b637ac41/2_shoes.png",
+      "generated_error": null,
+      "metadata": {
+        "type": "sneaker",
+        "color": [
+          "light blue",
+          "white"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "canvas",
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "features a classic lace-up design with a slightly worn look"
+      }
+    },
+    {
+      "label": "shoes",
+      "confidence": 0.79,
+      "url": "/static/results/b1231bd802bd4b7b9dc22387b637ac41/3_shoes.png",
+      "generated_url": "/static/generated/b1231bd802bd4b7b9dc22387b637ac41/3_shoes.png",
+      "generated_error": null,
+      "metadata": {
+        "type": "sneakers",
+        "color": [
+          "white",
+          "light blue"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "canvas",
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "distressed and worn-out appearance"
+      }
+    },
+    {
+      "label": "clothing",
+      "confidence": 0.72,
+      "url": "/static/results/b1231bd802bd4b7b9dc22387b637ac41/4_clothing.png",
+      "generated_url": "/static/generated/b1231bd802bd4b7b9dc22387b637ac41/4_clothing.png",
+      "generated_error": null,
+      "metadata": {
+        "type": "jacket",
+        "color": [
+          "white",
+          "light gray"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": "fleece",
+        "season": [
+          "autumn",
+          "winter"
+        ],
+        "notes": "features a full-length zipper and a high collar"
+      }
+    },
+    {
+      "label": "accessories",
+      "confidence": 0.53,
+      "url": "/static/results/b1231bd802bd4b7b9dc22387b637ac41/5_accessories.png",
+      "generated_url": "/static/generated/b1231bd802bd4b7b9dc22387b637ac41/5_accessories.png",
+      "generated_error": null,
+      "metadata": {
+        "type": "sunglasses",
+        "color": [
+          "black"
+        ],
+        "pattern": "solid",
+        "style": "casual",
+        "material": null,
+        "season": [
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "notes": "reflective lens with a modern frame design"
+      }
+    }
+  ]
+}
