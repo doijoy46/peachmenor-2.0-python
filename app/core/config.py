@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     mistral_model: str = "pixtral-12b-2409"
     supabase_url: str = ""
     supabase_key: str = ""
+    elevenlabs_api_key: str = ""
+    elevenlabs_voice_id: str = "21m00Tcm4TlvDq8ikWAM"
 
 
 

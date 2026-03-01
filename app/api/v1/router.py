@@ -6,7 +6,8 @@ import uuid
 from io import BytesIO
 from typing import List
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Body, File, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from PIL import Image
 
 router = APIRouter()
@@ -14,6 +15,7 @@ router = APIRouter()
 _yolo_model = None
 _mistral_client = None
 _gemini_client = None
+_elevenlabs_client = None
 
 CLOTHING_PROMPT = """Analyze this cropped clothing item and return ONLY a JSON object with these fields:
 {
@@ -110,6 +112,17 @@ def _get_gemini_client():
             raise HTTPException(status_code=500, detail="GOOGLE_API_KEY not set in .env")
         _gemini_client = genai.Client(api_key=settings.google_api_key)
     return _gemini_client
+
+
+def _get_elevenlabs_client():
+    global _elevenlabs_client
+    if _elevenlabs_client is None:
+        from elevenlabs.client import ElevenLabs
+        from app.core.config import settings
+        if not settings.elevenlabs_api_key:
+            raise HTTPException(status_code=500, detail="ELEVENLABS_API_KEY not set in .env")
+        _elevenlabs_client = ElevenLabs(api_key=settings.elevenlabs_api_key)
+    return _elevenlabs_client
 
 
 def _encode_image_b64(img: Image.Image) -> str:
@@ -238,6 +251,108 @@ def get_collection():
     return {"collection": result}
 
 
+SEARCH_PROMPT = """You are a fashion search engine. Given a user query and a list of clothing items with their metadata, return ONLY a JSON array of item IDs that match the query. Consider semantic meaning — for example "navy" should match "dark blue", "formal" should match "business", "warm" should match winter clothing, etc. Be generous with matches. If nothing matches, return an empty array [].
+
+User query: "{query}"
+
+Items:
+{items}
+
+Return ONLY a JSON array of matching IDs, e.g. ["id1", "id2"]. No explanation."""
+
+
+OUTFIT_PROMPT = """You are an expert fashion stylist. Given a user query and a wardrobe of clothing items, create outfit suggestions by grouping items that work well together. Each outfit should be a coordinated look.
+
+If the query is a simple search (e.g. "blue shirts", "jackets"), return a single group named "Search Results" with all matching item IDs — this tells the app to display them as a flat list.
+
+If the query asks for styling, outfits, or a look (e.g. "dress me up like Harvey Specter", "casual weekend outfit", "date night look"), group items into 1-4 outfit suggestions. Each outfit should have a short name and a one-sentence description.
+
+Return ONLY a JSON object in this format:
+{{"outfits": [{{"name": "Outfit Name", "description": "Short description", "items": ["id1", "id2"]}}]}}
+
+User query: "{query}"
+
+Items:
+{items}
+
+Return ONLY valid JSON, no explanation."""
+
+
+@router.post("/catalog/search")
+def search_collection(query: str = Body(..., embed=True)):
+    """Semantic search over the collection using Mistral."""
+    from app.core.config import settings
+    from app.core.supabase import get_supabase
+
+    sb = get_supabase()
+    crops = sb.table("crops").select("id, label, metadata").execute()
+
+    if not crops.data:
+        return {"matches": []}
+
+    items_text = []
+    for c in crops.data:
+        m = c.get("metadata") or {}
+        if isinstance(m, dict) and not m.get("error"):
+            desc = f"ID: {c['id']} | type: {m.get('type', '?')}, color: {m.get('color', '?')}, material: {m.get('material', '?')}, pattern: {m.get('pattern', '?')}, style: {m.get('style', '?')}, season: {m.get('season', '?')}, notes: {m.get('notes', '')}"
+        else:
+            desc = f"ID: {c['id']} | label: {c.get('label', 'unknown')}"
+        items_text.append(desc)
+
+    prompt = SEARCH_PROMPT.format(query=query, items="\n".join(items_text))
+
+    client = _get_mistral_client()
+    response = client.chat.complete(
+        model=settings.mistral_model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    try:
+        matches = _parse_json_response(response.choices[0].message.content)
+    except Exception:
+        matches = []
+
+    return {"matches": matches}
+
+
+@router.post("/catalog/outfits")
+def outfit_suggestions(query: str = Body(..., embed=True)):
+    """Group wardrobe items into outfit suggestions using Mistral."""
+    from app.core.config import settings
+    from app.core.supabase import get_supabase
+
+    sb = get_supabase()
+    crops = sb.table("crops").select("id, label, metadata").execute()
+
+    if not crops.data:
+        return {"outfits": []}
+
+    items_text = []
+    for c in crops.data:
+        m = c.get("metadata") or {}
+        if isinstance(m, dict) and not m.get("error"):
+            desc = f"ID: {c['id']} | type: {m.get('type', '?')}, color: {m.get('color', '?')}, material: {m.get('material', '?')}, pattern: {m.get('pattern', '?')}, style: {m.get('style', '?')}, season: {m.get('season', '?')}, notes: {m.get('notes', '')}"
+        else:
+            desc = f"ID: {c['id']} | label: {c.get('label', 'unknown')}"
+        items_text.append(desc)
+
+    prompt = OUTFIT_PROMPT.format(query=query, items="\n".join(items_text))
+
+    client = _get_mistral_client()
+    response = client.chat.complete(
+        model=settings.mistral_model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    try:
+        result = _parse_json_response(response.choices[0].message.content)
+        outfits = result.get("outfits", [])
+    except Exception:
+        outfits = []
+
+    return {"outfits": outfits}
+
+
 @router.post("/catalog/analyze")
 async def analyze_catalog(files: List[UploadFile] = File(...)):
     """
@@ -357,3 +472,41 @@ async def analyze_catalog(files: List[UploadFile] = File(...)):
             os.unlink(tmp_path)
 
     return {"results": output}
+
+
+@router.post("/voice/transcribe")
+async def transcribe_voice(file: UploadFile = File(...)):
+    """Transcribe voice recording using ElevenLabs Scribe v2."""
+    contents = await file.read()
+    audio_buf = BytesIO(contents)
+
+    client = _get_elevenlabs_client()
+    transcription = client.speech_to_text.convert(
+        file=audio_buf,
+        model_id="scribe_v2",
+        language_code="eng",
+    )
+
+    return {"text": transcription.text}
+
+
+@router.post("/voice/feedback")
+async def voice_feedback(message: str = Body(..., embed=True)):
+    """Generate TTS for a system feedback message."""
+    from app.core.config import settings
+
+    client = _get_elevenlabs_client()
+    audio_iter = client.text_to_speech.convert(
+        text=message,
+        voice_id=settings.elevenlabs_voice_id,
+        model_id="eleven_multilingual_v2",
+        output_format="mp3_44100_128",
+    )
+
+    audio_buf = BytesIO()
+    for chunk in audio_iter:
+        if chunk:
+            audio_buf.write(chunk)
+    audio_buf.seek(0)
+
+    return StreamingResponse(audio_buf, media_type="audio/mpeg")

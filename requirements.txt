@@ -9,3 +9,4 @@ python-multipart==0.0.9
 google-genai
 mistralai>=1.0.0
 supabase
+elevenlabs
