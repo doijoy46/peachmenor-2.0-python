@@ -278,6 +278,40 @@ Items:
 Return ONLY valid JSON, no explanation."""
 
 
+VISUAL_MATCH_PROMPT = """You are an expert fashion stylist with a keen eye for detail. You are given:
+1. A photo of a person wearing an outfit.
+2. A list of clothing items from their wardrobe with metadata.
+
+Your task:
+- Analyze the photo and identify what the person is wearing (types, colors, patterns, style).
+- Cross-reference with the wardrobe items below.
+- Suggest 1-4 outfits from the wardrobe that either:
+  (a) Recreate the same look using items they own, OR
+  (b) Complement or enhance the look with similar/coordinating pieces.
+
+Prioritize exact matches (same type + similar color) first, then complementary combinations.
+
+Return ONLY a JSON object in this format:
+{{"outfits": [{{"name": "Outfit Name", "description": "What you saw and why these items match", "items": ["id1", "id2"]}}]}}
+
+If no items match at all, return: {{"outfits": []}}
+
+Wardrobe items:
+{items}
+
+Return ONLY valid JSON, no explanation."""
+
+
+OUTFIT_CHECK_PROMPT = """You are a friendly, expert fashion consultant. You are given a photo of a person and a question about their outfit.
+
+Analyze the photo carefully — identify the garments, colors, fit, and overall style. Then answer the user's question naturally and conversationally in 2-3 sentences. Be honest but encouraging. If the outfit works, say why. If it doesn't quite fit the occasion, suggest what could be improved.
+
+User's question: "{query}"
+
+Reply with ONLY a JSON object: {{"assessment": "Your 2-3 sentence response here."}}
+No markdown, no explanation outside the JSON."""
+
+
 @router.post("/catalog/search")
 def search_collection(query: str = Body(..., embed=True)):
     """Semantic search over the collection using Mistral."""
@@ -351,6 +385,84 @@ def outfit_suggestions(query: str = Body(..., embed=True)):
         outfits = []
 
     return {"outfits": outfits}
+
+
+@router.post("/catalog/visual-match")
+async def visual_match(file: UploadFile = File(...)):
+    """Match a webcam photo against the wardrobe using Mistral vision."""
+    from app.core.config import settings
+    from app.core.supabase import get_supabase
+
+    contents = await file.read()
+    b64 = base64.b64encode(contents).decode("utf-8")
+
+    sb = get_supabase()
+    crops = sb.table("crops").select("id, label, metadata").execute()
+
+    if not crops.data:
+        return {"outfits": []}
+
+    items_text = []
+    for c in crops.data:
+        m = c.get("metadata") or {}
+        if isinstance(m, dict) and not m.get("error"):
+            desc = f"ID: {c['id']} | type: {m.get('type', '?')}, color: {m.get('color', '?')}, material: {m.get('material', '?')}, pattern: {m.get('pattern', '?')}, style: {m.get('style', '?')}, season: {m.get('season', '?')}, notes: {m.get('notes', '')}"
+        else:
+            desc = f"ID: {c['id']} | label: {c.get('label', 'unknown')}"
+        items_text.append(desc)
+
+    prompt_text = VISUAL_MATCH_PROMPT.format(items="\n".join(items_text))
+
+    client = _get_mistral_client()
+    response = client.chat.complete(
+        model=settings.mistral_model,
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
+                {"type": "text", "text": prompt_text},
+            ],
+        }],
+    )
+
+    try:
+        result = _parse_json_response(response.choices[0].message.content)
+        outfits = result.get("outfits", [])
+    except Exception:
+        outfits = []
+
+    return {"outfits": outfits}
+
+
+@router.post("/catalog/outfit-check")
+async def outfit_check(file: UploadFile = File(...), query: str = Body(...)):
+    """Assess if a webcam outfit is appropriate for an occasion using Mistral vision."""
+    from app.core.config import settings
+
+    contents = await file.read()
+    b64 = base64.b64encode(contents).decode("utf-8")
+
+    prompt_text = OUTFIT_CHECK_PROMPT.format(query=query)
+
+    client = _get_mistral_client()
+    response = client.chat.complete(
+        model=settings.mistral_model,
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
+                {"type": "text", "text": prompt_text},
+            ],
+        }],
+    )
+
+    try:
+        result = _parse_json_response(response.choices[0].message.content)
+        assessment = result.get("assessment", "I couldn't assess your outfit. Please try again.")
+    except Exception:
+        assessment = "I couldn't assess your outfit. Please try again."
+
+    return {"assessment": assessment}
 
 
 @router.post("/catalog/analyze")
